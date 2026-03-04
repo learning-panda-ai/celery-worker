@@ -86,3 +86,4 @@ CMD ["celery", "-A", "worker.celery_app.celery_app", "worker", "--loglevel=info"
 | `fastapi` / `uvicorn` | ✓ | ✗ |
 | `sqlalchemy` / `asyncpg` | ✓ | ✗ |
 # celery-worker
+# celery-worker
