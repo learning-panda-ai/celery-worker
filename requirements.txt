@@ -1,0 +1,5 @@
+pydantic-settings
+celery[redis]
+pymilvus
+docling
+sentence-transformers
