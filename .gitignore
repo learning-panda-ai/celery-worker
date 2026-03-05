@@ -2,3 +2,4 @@
 core/__pychache__/
 celery_worker/__pychache__/
 *.pyc
+temp/

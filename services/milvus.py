@@ -30,6 +30,12 @@ from sentence_transformers import SentenceTransformer
 from core.config import settings
 
 # ---------------------------------------------------------------------------
+# Project-local temp directory (avoids using the system /tmp root)
+# ---------------------------------------------------------------------------
+_TEMP_DIR = Path(__file__).resolve().parent.parent / "temp"
+_TEMP_DIR.mkdir(parents=True, exist_ok=True)
+
+# ---------------------------------------------------------------------------
 # Constants — must stay in sync with backend/app/services/agent_stream.py
 # ---------------------------------------------------------------------------
 _EMBED_MODEL = "all-MiniLM-L12-v2"
@@ -192,7 +198,7 @@ def _download_pdf(url: str) -> Path:
     properly percent-encoded and carries an embedded signature. Re-encoding
     the path would invalidate that signature, so the URL is used as-is.
     """
-    tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
+    tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False, dir=_TEMP_DIR)
     tmp_path = Path(tmp.name)
     tmp.close()
 

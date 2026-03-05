@@ -3,3 +3,4 @@ celery[redis]
 pymilvus
 docling
 sentence-transformers
+opencv-python-headless
