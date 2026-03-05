@@ -20,7 +20,7 @@ import tempfile
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
-from urllib.parse import quote, unquote, urlparse
+from urllib.parse import unquote, urlparse
 
 from docling.chunking import HybridChunker
 from docling.document_converter import DocumentConverter
@@ -187,19 +187,17 @@ def _download_pdf(url: str) -> Path:
     """
     Stream PDF from *url* into a named temporary file.
     Returns the temp-file path. The caller MUST delete it after use.
-    """
-    # Ensure the URL is properly percent-encoded (handles legacy records that
-    # were stored with raw spaces before the fix was applied).
-    parsed = urlparse(url)
-    encoded_path = quote(parsed.path, safe="/")
-    safe_url = parsed._replace(path=encoded_path).geturl()
 
+    The caller is expected to pass a boto3 pre-signed URL which is already
+    properly percent-encoded and carries an embedded signature. Re-encoding
+    the path would invalidate that signature, so the URL is used as-is.
+    """
     tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
     tmp_path = Path(tmp.name)
     tmp.close()
 
     try:
-        urllib.request.urlretrieve(safe_url, tmp_path)
+        urllib.request.urlretrieve(url, tmp_path)
     except Exception as exc:
         try:
             os.unlink(tmp_path)
