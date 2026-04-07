@@ -23,6 +23,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from docling.chunking import HybridChunker
+from docling.datamodel.pipeline_options import AcceleratorDevice, AcceleratorOptions, PipelineOptions
 from docling.document_converter import DocumentConverter
 from pymilvus import MilvusClient
 from sentence_transformers import SentenceTransformer
@@ -71,7 +72,10 @@ _embedder: SentenceTransformer | None = None
 def _get_converter() -> DocumentConverter:
     global _converter
     if _converter is None:
-        _converter = DocumentConverter()
+        pipeline_options = PipelineOptions(
+            accelerator_options=AcceleratorOptions(device=AcceleratorDevice.AUTO)
+        )
+        _converter = DocumentConverter(pipeline_options=pipeline_options)
     return _converter
 
 
