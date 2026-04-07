@@ -9,8 +9,8 @@ Design notes:
   • All heavy models (DocumentConverter, HybridChunker, SentenceTransformer) are
     lazy-loaded and cached as module-level singletons — the first request pays the
     warm-up cost; every subsequent request is fast.
-  • This module is intentionally synchronous / CPU-bound and is meant to run
-    exclusively inside Celery worker processes.
+  • Both Docling and SentenceTransformer use CUDA automatically when a GPU is
+    available and fall back to CPU otherwise.
   • The embedding model and dimension MUST match the retriever in agent_stream.py.
 """
 
@@ -21,6 +21,8 @@ import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import unquote, urlparse
+
+import torch
 
 from docling.chunking import HybridChunker
 from docling.datamodel.pipeline_options import AcceleratorDevice, AcceleratorOptions, PipelineOptions
@@ -89,7 +91,8 @@ def _get_chunker() -> HybridChunker:
 def _get_embedder() -> SentenceTransformer:
     global _embedder
     if _embedder is None:
-        _embedder = SentenceTransformer(_EMBED_MODEL)
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        _embedder = SentenceTransformer(_EMBED_MODEL, device=device)
     return _embedder
 
 
@@ -249,7 +252,7 @@ def _extract_chunks(pdf_path: Path) -> list[str]:
 
 def ingest_pdf(url: str, replace: bool = False) -> IngestResult:
     """
-    Full ingestion pipeline (synchronous / CPU-bound).
+    Full ingestion pipeline (synchronous).
 
     1. Parse metadata from the S3 URL.
     2. Download PDF to a temp file.
