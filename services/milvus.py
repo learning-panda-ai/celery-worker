@@ -25,8 +25,9 @@ from urllib.parse import unquote, urlparse
 import torch
 
 from docling.chunking import HybridChunker
-from docling.datamodel.pipeline_options import AcceleratorDevice, AcceleratorOptions, PipelineOptions
-from docling.document_converter import DocumentConverter
+from docling.datamodel.base_models import InputFormat
+from docling.datamodel.pipeline_options import AcceleratorDevice, AcceleratorOptions, PdfPipelineOptions
+from docling.document_converter import DocumentConverter, PdfFormatOption
 from pymilvus import MilvusClient
 from sentence_transformers import SentenceTransformer
 
@@ -74,10 +75,12 @@ _embedder: SentenceTransformer | None = None
 def _get_converter() -> DocumentConverter:
     global _converter
     if _converter is None:
-        pipeline_options = PipelineOptions(
+        pdf_options = PdfPipelineOptions(
             accelerator_options=AcceleratorOptions(device=AcceleratorDevice.AUTO)
         )
-        _converter = DocumentConverter(pipeline_options=pipeline_options)
+        _converter = DocumentConverter(
+            format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=pdf_options)}
+        )
     return _converter
 
 
